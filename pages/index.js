@@ -36,6 +36,7 @@ function HomePage(props) {
 // }
 
 export async function getStaticProps() {
+  //it holds context (params) and not req and res
   //fetch data from an api
   return {
     props: {
