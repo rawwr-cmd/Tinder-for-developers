@@ -1,48 +1,35 @@
+import { MongoClient } from "mongodb";
 import MeetUpList from "../components/meetups/MeetUpList.js";
 
-const DUMMY_MEETUPS = [
-  {
-    id: "m1",
-    title: "First React Meetup",
-    image:
-      "https://images.unsplash.com/photo-1517141772911-756dc840a94f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1930&q=80",
-    address: "San Francisco, United States",
-    description: "React-meetup",
-  },
-  {
-    id: "m2",
-    title: "Next Js Meetup",
-    image:
-      "https://images.unsplash.com/photo-1517141772911-756dc840a94f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1930&q=80",
-    address: "San Jose, Street 7",
-    description: "NextJs-meetup",
-  },
-];
-
 function HomePage(props) {
-  return <MeetUpList meetups={props.meetup} />;
+  return <MeetUpList meetups={props.meetups} />;
 }
-
-// export async function getServerSideProps(context) {
-//   const req = context.req;
-//   const res = context.res;
-
-//   //fetch data from an API
-//   return {
-//     props: {
-//       meetups: DUMMY_MEETUPS,
-//     },
-//   };
-// }
 
 export async function getStaticProps() {
   //it holds context (params) and not req and res
   //fetch data from an api
+  const client = await MongoClient.connect(
+    "mongodb+srv://rawwr:ZNeil69Rb23VvvII@cluster0.lefzbmb.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const meetups = await meetupsCollection.find().toArray();
+
+  client.close();
+
   return {
     props: {
-      meetup: DUMMY_MEETUPS,
+      meetups: meetups.map((meetup) => ({
+        title: meetup.title,
+        address: meetup.address,
+        image: meetup.image,
+        id: meetup._id.toString(),
+      })),
     },
-    revalidate: 10, //ensuring the age is updated regularly after deployement
+    revalidate: 1,
   };
 }
 
